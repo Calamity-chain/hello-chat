@@ -3,7 +3,7 @@ a chat app for mobile devices using React Native. The app will
 provide users with a chat interface and options to share images and their
 location.
 
-![image](https://user-images.githubusercontent.com/78163718/120373479-b1875580-c318-11eb-899d-b247d8fdf435.png)
+![image](https://user-images.githubusercontent.com/78163718/120374592-08d9f580-c31a-11eb-852d-21140765a8e5.png)
 
 
 
