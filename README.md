@@ -3,6 +3,10 @@ a chat app for mobile devices using React Native. The app will
 provide users with a chat interface and options to share images and their
 location.
 
+![image](https://user-images.githubusercontent.com/78163718/120373479-b1875580-c318-11eb-899d-b247d8fdf435.png)
+
+
+
 ## key features
 * Users can enter their name and choose a background colour for the chat screen before joining the chat room
 * The chat room displays the conversation with an input field and submit button
