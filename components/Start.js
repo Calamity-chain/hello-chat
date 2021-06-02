@@ -8,7 +8,9 @@ import {
   Button, 
   Alert, 
   ScrollView, 
-  StyleSheet 
+  StyleSheet ,
+  Platform, 
+  KeyboardAvoidingView
 } from 'react-native';
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { setStatusBarBackgroundColor } from "expo-status-bar";
@@ -95,6 +97,7 @@ export default class Start extends React.Component {
         }}
         title="Press me"
         /> */}
+        <KeyboardAvoidingView behavior="height" />
         </View>
       </ImageBackground>
     );
