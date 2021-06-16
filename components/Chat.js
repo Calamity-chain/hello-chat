@@ -3,13 +3,36 @@ import { GiftedChat, Bubble, InputToolbar } from 'react-native-gifted-chat';
 //Import storage system
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import { View, Text, Button, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, Platform, KeyboardAvoidingView } from 'react-native';
+import CustomActions from './CustomActions';
+import MapView from 'react-native-maps';
+
 
 //import Firestore database
 const firebase = require('firebase');
 require('firebase/firestore');
 
-//connect the database
+
+
+
+export default class Chat extends Component {
+//state initialization within the constructor
+  constructor() {
+    super();
+    this.state = {
+      //initiate state to send, receive, and display messages
+      messages: [],
+      uid: 0,
+    //   user: {
+    //     _id: '',
+    //     name: '',
+    //     avatar: '',
+    // },
+      image: null,
+      location: null,
+  }
+
+  //connect the database
 const firebaseConfig = {
   apiKey: "AIzaSyB8cwR6WQ19QIQlA0sSALFSJSNTh56ywBg",
     authDomain: "hello-chat-app-cf.firebaseapp.com",
@@ -27,20 +50,6 @@ this.referenceChatMessages = firebase.firestore().collection("messages");
 // OR
 // firebase.firestore().collection('messages').doc('user/Steve');
 
-
-export default class Chat extends Component {
-//state initialization within the constructor
-  constructor() {
-    super();
-    this.state = {
-      //initiate state to send, receive, and display messages
-      messages: [],
-      uid: 0,
-      user: {
-        _id: '',
-        name: '',
-        avatar: '',
-    }}
   }
 
   //Whenever sth changes retrieves the current data in "messages" collection and store it in state lists, allowing it to be rendered in the view
@@ -55,6 +64,8 @@ export default class Chat extends Component {
         text: data.text,
         createdAt: data.createdAt.toDate(),
         user: data.user,
+        image: data.image || null,
+        location: data.location || null,
       });
     });
     this.setState({
@@ -112,31 +123,33 @@ async deleteMessages() {
  //this function gets called right after the Chat component mounts and sets the state with a static msg
   componentDidMount() {
     // Check user connection
-    NetInfo.fetch().then(connection => {
+    NetInfo.fetch().then((connection) => {
       if (connection.isConnected) {
-        console.log('online');
+        // connect to messages collection
+        this.referenceChatMessages = firebase.firestore().collection("messages");
+
+
     // authenticates user with firebase
-    this.authUnsubscribe = firebase.auth().onAuthStateChanged((user) => {
-      if(!user) {
-        firebase.auth().signInAnonymously();
+    this.authUnsubscribe = firebase.auth().onAuthStateChanged(async (user) => {
+      if (!user) {
+        await firebase.auth().signInAnonymously();
       }
       //update user state with currently active user data
       this.setState({
+        isConnected: true,
         uid: user.uid,
         messages: [],
       });
+      // Lists for collection changes of current user
       this.unsubscribe = this.referenceChatMessages
       .orderBy("createdAt", "desc")
       .onSnapshot(this.onCollectionUpdate);
     });
-    this.referenceChatMessages = firebase.firestore().collection('messages');
-    this.unsubscribe = this.referenceChatMessages.onSnapshot(this.onCollectionUpdate);
-    console.log("online");
       }else{
     this.setState({
       isConnected: false,
     });
-    this.getMessage();
+    this.getMessages();
     Alert.alert("No internet connection, unable to send messages");
     console.log("offline");
       }
@@ -145,8 +158,12 @@ async deleteMessages() {
   
   // unsubscribes from user authentication and DB updates
   componentWillUnmount() {
-    this.authUnsubscribe();
+    if (this.authUnsubscribe) {
+      this.authUnsubscribe();
+    };
+    if (this.unsubscribe) {
     this.unsubscribe();
+    };
  }
 
 
@@ -183,6 +200,35 @@ async deleteMessages() {
       return <InputToolbar {...props} />;
     }
   }
+
+// returns custom map view
+renderCustomView = props => {
+  const { currentMessage } = props;
+  if (currentMessage.location) {
+      return (
+          <MapView
+              style={{
+                  width: 150,
+                  height: 100,
+                  borderRadius: 13,
+                  margin: 3
+              }}
+              region={{
+                  latitude: Number(currentMessage.location.latitude),
+                  longitude: Number(currentMessage.location.longitude),
+                  latitudeDelta: 0.0922,
+                  longitudeDelta: 0.0421
+              }}
+          />
+      );
+  }
+  return null;
+}
+
+
+  renderActions = (props) => {
+    return <CustomActions {...props} />;
+  };
   
 
 //code for rendering the chat interface
@@ -205,6 +251,8 @@ async deleteMessages() {
         isConnected={this.state.isConnected}
         renderInputToolbar={this.renderInputToolbar.bind(this)}
         renderBubble={this.renderBubble.bind(this)}
+        renderActions={this.renderActions}
+        renderCustomView={this.renderCustomView}
         messages={this.state.messages}
         onSend={(messages) => this.onSend(messages)}
         user={{
