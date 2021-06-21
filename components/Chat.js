@@ -91,7 +91,7 @@ this.referenceChatMessages = firebase.firestore().collection("messages");
   const message = this.state.messages[0];
   this.referenceChatMessages.add({
     _id: message._id,
-    text: message.text,
+    text: message.text || null ,
     createdAt: message.createdAt,
     user: message.user,
     image: message.image || null,

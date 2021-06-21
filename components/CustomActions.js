@@ -130,7 +130,11 @@ export default class CustomActions extends React.Component {
       try {
         const location = await Location.getCurrentPositionAsync({accuracy:Location.Accuracy.High})
         if(location){
-          props.onSend({ location });        
+          this.props.onSend({ location: {
+            latitude: location.coords.latitude,
+            longitude: location.coords.longitude,
+            }
+           });        
         }
       } catch (error) {
         console.log(error)
